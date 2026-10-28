@@ -21,6 +21,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE_DIR, "data.json")
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
 INDEX_FILE = os.path.join(BASE_DIR, "index.html")
+KIOSK_FILE = os.path.join(BASE_DIR, "kiosk.html")
 
 # Percorso predefinito del progetto principale (kindle-fridge-dashboard) per sincronizzazione diretta
 PARENT_FRIDGE_DATA = os.path.abspath(os.path.join(BASE_DIR, "..", "kindle-fridge-dashboard", "data.json"))
@@ -412,6 +413,14 @@ class KindleSimpleHandler(SimpleHTTPRequestHandler):
             return
 
         # 3. INTERFACCIA WEB HTML
+        if parsed.path in ["/kiosk", "/kiosk.html"]:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            with open(KIOSK_FILE, "rb") as f:
+                self.wfile.write(f.read())
+            return
+
         if parsed.path in ["/", "/index.html"]:
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")

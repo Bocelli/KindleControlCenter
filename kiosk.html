@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Kindle Control Center - Static Image Kiosk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="refresh" content="30">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background-color: #ffffff;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .kiosk-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    img.static-dashboard {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+  </style>
+</head>
+<body>
+  <div class="kiosk-container">
+    <img id="dashboard-img" class="static-dashboard" src="/screen.png" alt="Kindle Dashboard">
+  </div>
+
+  <script>
+    // Aggiorna l'immagine ogni 20 secondi senza ricaricare la pagina (evita flash del browser)
+    setInterval(function() {
+      var img = document.getElementById('dashboard-img');
+      if (img) {
+        img.src = '/screen.png?t=' + Date.now();
+      }
+    }, 20000);
+  </script>
+</body>
+</html>
