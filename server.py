@@ -53,7 +53,7 @@ def load_config():
         "weather_lat": 37.818,
         "weather_lon": 12.801,
         "bot_token": "",
-        "shared_data_url": "",
+        "shared_data_url": "https://kindlefridge.onrender.com/api/data",
         "default_width": 1072,
         "default_height": 1448
     }
@@ -84,20 +84,31 @@ def get_target_data_file():
         return shared
     return DATA_FILE
 
+last_remote_data = None
+last_remote_time = 0
+
 def load_data():
+    global last_remote_data, last_remote_time
     cfg = load_config()
     shared_url = cfg.get("shared_data_url", "").strip()
     if shared_url:
+        now_ts = time.time()
+        if last_remote_data and (now_ts - last_remote_time < 4):
+            return last_remote_data
         try:
             req = urllib.request.Request(shared_url, headers={"User-Agent": "KindleSimpleDashboard/1.0"})
             with urllib.request.urlopen(req, timeout=5) as resp:
                 rem = json.loads(resp.read().decode("utf-8"))
-                return {
+                last_remote_data = {
                     "notes": rem.get("notes", []),
                     "groceries": rem.get("groceries", [])
                 }
+                last_remote_time = now_ts
+                return last_remote_data
         except Exception as e:
             print(f"[Sync URL] Errore fetch da {shared_url}: {e}")
+            if last_remote_data:
+                return last_remote_data
 
     target_file = get_target_data_file()
     with data_lock:

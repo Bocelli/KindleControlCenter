@@ -5,6 +5,7 @@
   "weather_lat": 37.818,
   "weather_lon": 12.801,
   "bot_token": "",
+  "shared_data_url": "https://kindlefridge.onrender.com/api/data",
   "default_width": 1072,
   "default_height": 1448
 }
