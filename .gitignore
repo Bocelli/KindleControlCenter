@@ -11,3 +11,6 @@ __pycache__/
 test_*.png
 kindle*.png
 push.bat
+*.ps1
+*.log
+mrinstaller.sh

@@ -111,15 +111,10 @@ def load_data():
             except Exception as e:
                 print(f"[Data] Errore lettura {target_file}:", e)
 
-        # Fallback locale
+        # Fallback locale vuoto
         return {
-            "notes": [
-                {"id": 1, "author": "MAMMA", "text": "Promemoria bacheca Kindle sincronizzata!", "time": "10:00"}
-            ],
-            "groceries": [
-                {"id": 1, "text": "Latte fresco", "author": "MAMMA", "done": False},
-                {"id": 2, "text": "Caffè macinato", "author": "PAPÀ", "done": False}
-            ]
+            "notes": [],
+            "groceries": []
         }
 
 def save_data(data):

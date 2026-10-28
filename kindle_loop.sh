@@ -9,7 +9,7 @@
 # ==============================================================================
 
 # Inserisci qui l'IP del computer o server su cui gira server.py
-SERVER_URL="${1:-http://192.168.1.100:8080/screen.png}"
+SERVER_URL="${1:-https://kindlecontrolcenter.onrender.com/screen.png}"
 TMP_IMG="/tmp/kindle_screen.png"
 
 echo "Avvio Kindle Dashboard Loop verso: $SERVER_URL"
