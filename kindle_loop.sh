@@ -29,14 +29,31 @@ while true; do
     CYCLES=0
   fi
 
+  # Rileva livello batteria del Kindle (0-100)
+  BAT=""
+  if command -v lipc-get-prop >/dev/null 2>&1; then
+    BAT=$(lipc-get-prop com.lab126.powerd battLevel 2>/dev/null)
+  fi
+  if [ -z "$BAT" ] && [ -f /sys/class/power_supply/battery/capacity ]; then
+    BAT=$(cat /sys/class/power_supply/battery/capacity 2>/dev/null)
+  fi
+
+  REQ_URL="$SERVER_URL"
+  if [ -n "$BAT" ]; then
+    case "$REQ_URL" in
+      *\?*) REQ_URL="${REQ_URL}&bat=${BAT}" ;;
+      *)    REQ_URL="${REQ_URL}?bat=${BAT}" ;;
+    esac
+  fi
+
   # Scarica immagine dal server (prova curl, wget o fallback binario)
   SUCCESS=1
   if [ -x /mnt/us/bin/curl ]; then
-    /mnt/us/bin/curl -k -s -m 8 -o "$TMP_IMG" "$SERVER_URL" && SUCCESS=0
+    /mnt/us/bin/curl -k -s -m 8 -o "$TMP_IMG" "$REQ_URL" && SUCCESS=0
   elif command -v curl >/dev/null 2>&1; then
-    curl -k -s -m 8 -o "$TMP_IMG" "$SERVER_URL" && SUCCESS=0
+    curl -k -s -m 8 -o "$TMP_IMG" "$REQ_URL" && SUCCESS=0
   elif command -v wget >/dev/null 2>&1; then
-    wget -q --no-check-certificate -O "$TMP_IMG" --timeout=8 "$SERVER_URL" 2>/dev/null && SUCCESS=0
+    wget -q --no-check-certificate -O "$TMP_IMG" --timeout=8 "$REQ_URL" 2>/dev/null && SUCCESS=0
   fi
 
   if [ "$SUCCESS" -eq 0 ] && [ -s "$TMP_IMG" ]; then

@@ -399,11 +399,17 @@ class KindleSimpleHandler(SimpleHTTPRequestHandler):
             width = int(qparams.get("w", [default_w])[0])
             height = int(qparams.get("h", [default_h])[0])
 
+            # Lettura percentuale batteria (?bat=85)
+            bat_param = qparams.get("bat", [None])[0]
+            battery = None
+            if bat_param is not None and bat_param.strip().isdigit():
+                battery = int(bat_param.strip())
+
             data = load_data()
             weather = get_weather()
 
             # Genera immagine in memoria
-            img = render_dashboard_image(data, weather, width=width, height=height)
+            img = render_dashboard_image(data, weather, width=width, height=height, battery=battery)
             buf = io.BytesIO()
             is_bmp = parsed.path.endswith(".bmp")
             fmt = "BMP" if is_bmp else "PNG"

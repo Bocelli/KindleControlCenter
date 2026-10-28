@@ -21,7 +21,40 @@ def get_font(name_or_style, size):
     except Exception:
         return ImageFont.load_default()
 
-def render_dashboard_image(data, weather, width=1072, height=1448):
+def draw_battery_indicator(draw, x, y, level, font, scale=1.0):
+    """Disegna un indicatore di batteria in perfetto stile Swiss Monochrome E-Ink."""
+    txt = f"{level}%"
+    t_bbox = draw.textbbox((0, 0), txt, font=font)
+    t_w = t_bbox[2] - t_bbox[0]
+    
+    b_w = int(28 * scale)
+    b_h = int(14 * scale)
+    nub_w = max(2, int(3 * scale))
+    nub_h = int(6 * scale)
+    
+    # Testo percentuale a sinistra dell'icona
+    draw.text((x, y + int(1 * scale)), txt, font=font, fill=0)
+    
+    # Icona batteria a destra del testo
+    icon_x = x + t_w + int(8 * scale)
+    icon_y = y + int(1 * scale)
+    
+    # Corpo esterno
+    outline_w = max(1, int(1.5 * scale))
+    draw.rectangle([icon_x, icon_y, icon_x + b_w, icon_y + b_h], outline=0, width=outline_w)
+    
+    # Polo positivo (+)
+    nub_y = icon_y + (b_h - nub_h) // 2
+    draw.rectangle([icon_x + b_w, nub_y, icon_x + b_w + nub_w, nub_y + nub_h], fill=0)
+    
+    # Riempimento interno proporzionale
+    margin = outline_w + 1
+    inner_max_w = b_w - (margin * 2)
+    inner_w = int(inner_max_w * (max(0, min(100, level)) / 100.0))
+    if inner_w > 0:
+        draw.rectangle([icon_x + margin, icon_y + margin, icon_x + margin + inner_w, icon_y + b_h - margin], fill=0)
+
+def render_dashboard_image(data, weather, width=1072, height=1448, battery=None):
     """
     Genera un'immagine PNG monocromatica ad alto contrasto (scala di grigi 8-bit)
     perfetta per schermi E-Ink Amazon Kindle (Kindle 11a gen 1072x1448 portrait / 1448x1072 landscape,
@@ -69,6 +102,12 @@ def render_dashboard_image(data, weather, width=1072, height=1448):
         c_bbox = draw.textbbox((16, int(10 * scale)), city_badge, font=f_small)
         draw.rectangle([10, int(8 * scale), c_bbox[2] + int(4 * scale), c_bbox[3] + int(4 * scale)], fill=BLACK)
         draw.text((16, int(10 * scale)), city_badge, font=f_small, fill=WHITE)
+
+        # Indicatore Batteria Kindle
+        if battery is not None:
+            bat_x = width - int(85 * scale)
+            bat_y = int(10 * scale)
+            draw_battery_indicator(draw, bat_x, bat_y, battery, f_small, scale=scale)
 
         # Temperatura grande
         draw.text((15, int(38 * scale)), temp, font=f_temp, fill=BLACK)
@@ -191,6 +230,12 @@ def render_dashboard_image(data, weather, width=1072, height=1448):
         c_bbox = draw.textbbox((int(18 * scale), int(12 * scale)), city_badge, font=f_small)
         draw.rectangle([int(12 * scale), int(10 * scale), c_bbox[2] + int(4 * scale), c_bbox[3] + int(4 * scale)], fill=BLACK)
         draw.text((int(18 * scale), int(12 * scale)), city_badge, font=f_small, fill=WHITE)
+
+        # Indicatore Batteria Kindle
+        if battery is not None:
+            bat_x = width - int(95 * scale)
+            bat_y = int(12 * scale)
+            draw_battery_indicator(draw, bat_x, bat_y, battery, f_small, scale=scale)
 
         draw.text((int(15 * scale), int(34 * scale)), temp, font=f_temp, fill=BLACK)
         temp_bbox = draw.textbbox((int(15 * scale), int(34 * scale)), temp, font=f_temp)
