@@ -97,19 +97,13 @@ def render_dashboard_image(data, weather, width=1072, height=1448, battery=None)
         meteo_h = int(125 * (height / 800.0))
         draw.rectangle([0, 0, width, meteo_h], fill=WHITE, outline=BLACK, width=2)
 
-        # Badge città a larghezza dinamica
-        city_badge = f" {city} "
-        c_bbox = draw.textbbox((16, int(10 * scale)), city_badge, font=f_small)
-        draw.rectangle([10, int(8 * scale), c_bbox[2] + int(4 * scale), c_bbox[3] + int(4 * scale)], fill=BLACK)
-        draw.text((16, int(10 * scale)), city_badge, font=f_small, fill=WHITE)
-
         # Indicatore Batteria Kindle
         if battery is not None:
             bat_x = width - int(85 * scale)
             bat_y = int(10 * scale)
             draw_battery_indicator(draw, bat_x, bat_y, battery, f_small, scale=scale)
 
-        # Temperatura grande
+        # Temperatura grande (sotto la safe area dell'orologio nativo Kindle)
         draw.text((15, int(38 * scale)), temp, font=f_temp, fill=BLACK)
         temp_bbox = draw.textbbox((15, int(38 * scale)), temp, font=f_temp)
 
@@ -117,6 +111,12 @@ def render_dashboard_image(data, weather, width=1072, height=1448, battery=None)
         cond_x = max(int(130 * scale), temp_bbox[2] + int(12 * scale))
         draw.text((cond_x, int(42 * scale)), cond, font=f_header, fill=BLACK)
         draw.text((cond_x, int(64 * scale)), f"{min_max}  •  {rain}", font=f_small, fill=BLACK)
+
+        # Badge città a larghezza dinamica (allineato con cond_x per lasciare libero l'orologio Kindle a sinistra)
+        city_badge = f" {city} "
+        c_bbox = draw.textbbox((cond_x + int(4 * scale), int(10 * scale)), city_badge, font=f_small)
+        draw.rectangle([cond_x, int(8 * scale), c_bbox[2] + int(4 * scale), c_bbox[3] + int(4 * scale)], fill=BLACK)
+        draw.text((cond_x + int(4 * scale), int(10 * scale)), city_badge, font=f_small, fill=WHITE)
 
         # Previsioni prossime ore
         if forecast_slots:
@@ -217,7 +217,7 @@ def render_dashboard_image(data, weather, width=1072, height=1448, battery=None)
 
         # 4. FOOTER DI STATO
         draw.rectangle([0, height - int(30 * scale), width, height], fill=BLACK)
-        draw.text((15, height - int(22 * scale)), f"KINDLE SIMPLE DASHBOARD  •  REFRESH 10s  •  ORE {sync_time}", font=f_small, fill=WHITE)
+        draw.text((15, height - int(22 * scale)), f"KINDLE SIMPLE DASHBOARD  •  REFRESH 10m  •  ORE {sync_time}", font=f_small, fill=WHITE)
 
     else:
         # ==========================================
@@ -225,11 +225,6 @@ def render_dashboard_image(data, weather, width=1072, height=1448, battery=None)
         # ==========================================
         meteo_h = int(95 * (height / 600.0))
         draw.rectangle([0, 0, width, meteo_h], fill=WHITE, outline=BLACK, width=2)
-
-        city_badge = f" {city} "
-        c_bbox = draw.textbbox((int(18 * scale), int(12 * scale)), city_badge, font=f_small)
-        draw.rectangle([int(12 * scale), int(10 * scale), c_bbox[2] + int(4 * scale), c_bbox[3] + int(4 * scale)], fill=BLACK)
-        draw.text((int(18 * scale), int(12 * scale)), city_badge, font=f_small, fill=WHITE)
 
         # Indicatore Batteria Kindle
         if battery is not None:
@@ -243,6 +238,12 @@ def render_dashboard_image(data, weather, width=1072, height=1448, battery=None)
         cond_x = max(int(140 * scale), temp_bbox[2] + int(14 * scale))
         draw.text((cond_x, int(36 * scale)), cond, font=f_header, fill=BLACK)
         draw.text((cond_x, int(58 * scale)), f"{min_max}   |   {rain}", font=f_small, fill=BLACK)
+
+        # Badge città (allineato con cond_x per Safe Area orologio)
+        city_badge = f" {city} "
+        c_bbox = draw.textbbox((cond_x + int(4 * scale), int(10 * scale)), city_badge, font=f_small)
+        draw.rectangle([cond_x, int(8 * scale), c_bbox[2] + int(4 * scale), c_bbox[3] + int(4 * scale)], fill=BLACK)
+        draw.text((cond_x + int(4 * scale), int(10 * scale)), city_badge, font=f_small, fill=WHITE)
 
         if forecast_slots:
             fc_text = "   •   ".join([f"ore {s.get('time', '')}: {s.get('temp', '')} ({s.get('desc', '')})" for s in forecast_slots[:2]])
@@ -335,6 +336,6 @@ def render_dashboard_image(data, weather, width=1072, height=1448, battery=None)
 
         # 3. FOOTER
         draw.rectangle([0, height - footer_h, width, height], fill=BLACK)
-        draw.text((int(15 * scale), height - int(20 * scale)), f"KINDLE SIMPLE DASHBOARD  •  REFRESH 10s  •  ORE {sync_time}", font=f_small, fill=WHITE)
+        draw.text((int(15 * scale), height - int(20 * scale)), f"KINDLE SIMPLE DASHBOARD  •  REFRESH 10m  •  ORE {sync_time}", font=f_small, fill=WHITE)
 
     return img

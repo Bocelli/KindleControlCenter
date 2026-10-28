@@ -18,6 +18,8 @@ else
     if [ -f /usr/bin/lipc-set-prop ]; then
         lipc-set-prop -i com.lab126.powerd preventScreenSaver 1 2>/dev/null
     fi
+    sleep 1
+    eips -c 2>/dev/null
     nohup /bin/sh /mnt/us/kindle_loop.sh "https://kindlecontrolcenter.onrender.com/screen.png" 600 >/tmp/dashboard.log 2>&1 &
     sleep 2
 fi

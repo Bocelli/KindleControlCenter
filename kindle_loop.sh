@@ -21,6 +21,9 @@ if [ -f /usr/bin/lipc-set-prop ]; then
   lipc-set-prop -i com.lab126.powerd preventScreenSaver 1
 fi
 
+# Pulizia iniziale dello schermo per azzerare tastiera e ghosting
+eips -c 2>/dev/null
+
 CYCLES=0
 while true; do
   CYCLES=$((CYCLES + 1))
