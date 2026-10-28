@@ -52,6 +52,7 @@ def load_config():
         "weather_lat": 37.818,
         "weather_lon": 12.801,
         "bot_token": "",
+        "shared_data_url": "",
         "default_width": 1072,
         "default_height": 1448
     }
@@ -68,6 +69,8 @@ def load_config():
         cfg["port"] = int(os.environ.get("PORT"))
     if os.environ.get("SHARED_DATA_PATH"):
         cfg["shared_data_path"] = os.environ.get("SHARED_DATA_PATH")
+    if os.environ.get("SHARED_DATA_URL"):
+        cfg["shared_data_url"] = os.environ.get("SHARED_DATA_URL")
     if os.environ.get("BOT_TOKEN"):
         cfg["bot_token"] = os.environ.get("BOT_TOKEN")
 
@@ -81,6 +84,20 @@ def get_target_data_file():
     return DATA_FILE
 
 def load_data():
+    cfg = load_config()
+    shared_url = cfg.get("shared_data_url", "").strip()
+    if shared_url:
+        try:
+            req = urllib.request.Request(shared_url, headers={"User-Agent": "KindleSimpleDashboard/1.0"})
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                rem = json.loads(resp.read().decode("utf-8"))
+                return {
+                    "notes": rem.get("notes", []),
+                    "groceries": rem.get("groceries", [])
+                }
+        except Exception as e:
+            print(f"[Sync URL] Errore fetch da {shared_url}: {e}")
+
     target_file = get_target_data_file()
     with data_lock:
         if os.path.exists(target_file):
@@ -413,6 +430,26 @@ class KindleSimpleHandler(SimpleHTTPRequestHandler):
             req_data = json.loads(body.decode("utf-8"))
         except Exception:
             req_data = {}
+
+        # Proxy automatico se configurato SHARED_DATA_URL (es. verso Kindlefridge su Render)
+        cfg = load_config()
+        shared_url = cfg.get("shared_data_url", "").strip()
+        if shared_url and parsed.path.startswith("/api/"):
+            base_remote = shared_url.split("/api/")[0]
+            try:
+                fwd_req = urllib.request.Request(
+                    f"{base_remote}{parsed.path}",
+                    data=body,
+                    headers={"Content-Type": "application/json", "User-Agent": "KindleSimpleDashboard/1.0"}
+                )
+                with urllib.request.urlopen(fwd_req, timeout=5) as fwd_resp:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(fwd_resp.read())
+                    return
+            except Exception as e:
+                print(f"[Sync URL] Errore proxy POST a {base_remote}: {e}")
 
         data = load_data()
 
