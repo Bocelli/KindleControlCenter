@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kindle Simple Dashboard - Meteo, Note & Spesa</title>
+  <style>
+    /* -------------------------------------------------------------
+       DESIGN SYSTEM: SWISS MONOCHROME E-INK (UI/UX PRO MAX)
+       - Pure High-Contrast Monochrome (#000000 / #ffffff)
+       - Swiss Typographic Structure
+       - Zero gradients, crisp 1-bit / 2-bit outlines
+       - Min 48px touch targets for e-ink touch screens
+       ------------------------------------------------------------- */
+    :root {
+      --bg: #ffffff;
+      --fg: #000000;
+      --border-thick: 3px solid #000000;
+      --border-thin: 2px solid #000000;
+      --border-hairline: 1px solid #000000;
+      --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-main);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      border: 3px solid var(--fg);
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* ICONS SVG */
+    .icon {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .icon-sm { width: 16px; height: 16px; stroke-width: 2; }
+    .icon-lg { width: 28px; height: 28px; stroke-width: 2.5; }
+
+    /* =========================================================
+       1. TOP BAR: METEO SALEMI (TP)
+       ========================================================= */
+    header.meteo-bar {
+      border-bottom: var(--border-thick);
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg);
+    }
+
+    .meteo-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .city-badge {
+      background: var(--fg);
+      color: var(--bg);
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 4px 8px;
+      text-transform: uppercase;
+    }
+
+    .temp-display {
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      line-height: 1;
+    }
+
+    .meteo-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meteo-condition {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .meteo-subdetails {
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .meteo-forecast {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-left: var(--border-thin);
+      padding-left: 14px;
+    }
+
+    .forecast-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f5f5f5;
+      border: var(--border-hairline);
+      padding: 4px 8px;
+      min-width: 65px;
+    }
+
+    .forecast-time {
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .forecast-temp {
+      font-size: 0.95rem;
+      font-weight: 900;
+    }
+
+    .forecast-desc {
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    /* =========================================================
+       2. MAIN CONTENT GRID (NOTE & SPESA)
+       ========================================================= */
+    main.dashboard-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 0;
+    }
+
+    @media (orientation: portrait), (max-width: 800px) {
+      main.dashboard-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      border-right: var(--border-thick);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel:last-child {
+      border-right: none;
+    }
+
+    @media (orientation: portrait), (max-width: 800px) {
+      .panel:first-child {
+        border-right: none;
+        border-bottom: var(--border-thick);
+      }
+    }
+
+    .panel-header {
+      background: var(--fg);
+      color: var(--bg);
+      padding: 8px 14px;
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: var(--border-thick);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-counter {
+      background: var(--bg);
+      color: var(--fg);
+      padding: 2px 7px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* NOTE ITEMS */
+    .note-card {
+      border: var(--border-thin);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #ffffff;
+    }
+
+    .note-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: var(--border-hairline);
+      padding-bottom: 4px;
+    }
+
+    .author-badge {
+      background: var(--fg);
+      color: var(--bg);
+      padding: 2px 6px;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .note-time {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .note-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    /* SPESA ITEMS */
+    .grocery-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .grocery-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border: var(--border-thin);
+      background: #ffffff;
+      cursor: pointer;
+      min-height: 48px;
+    }
+
+    .grocery-checkbox {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--fg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .grocery-checkbox.checked::after {
+      content: "✕";
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--fg);
+    }
+
+    .grocery-content {
+      flex: 1;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .grocery-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .grocery-author {
+      font-size: 0.72rem;
+      font-weight: 700;
+      opacity: 0.8;
+      text-transform: uppercase;
+    }
+
+    .grocery-item.done {
+      background: #fafafa;
+      border-style: dashed;
+    }
+
+    .grocery-item.done .grocery-name {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    /* EMPTY STATES */
+    .empty-state {
+      padding: 24px 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      border: 2px dashed #999;
+      margin: auto 0;
+    }
+
+    .empty-title {
+      font-size: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .empty-sub {
+      font-size: 0.85rem;
+      font-weight: 500;
+      opacity: 0.8;
+      max-width: 280px;
+    }
+
+    /* =========================================================
+       3. BOTTOM BAR (STATUS & NO CLOCK)
+       ========================================================= */
+    footer.bottom-bar {
+      border-top: var(--border-thick);
+      padding: 8px 14px;
+      background: var(--fg);
+      color: var(--bg);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--bg);
+      display: inline-block;
+    }
+
+    .btn-action {
+      background: var(--bg);
+      color: var(--fg);
+      border: 2px solid var(--bg);
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-action:hover, .btn-action:active {
+      background: var(--fg);
+      color: var(--bg);
+      border-color: var(--bg);
+    }
+  </style>
+  <noscript>
+    <meta http-equiv="refresh" content="10">
+  </noscript>
+</head>
+<body>
+
+  <!-- TOP BAR: METEO -->
+  <header class="meteo-bar">
+    <div class="meteo-left">
+      <span class="city-badge" id="city-badge">SALEMI (TP)</span>
+      <span class="temp-display" id="temp-display">--°C</span>
+      <div class="meteo-meta">
+        <span class="meteo-condition" id="meteo-condition">AGGIORNAMENTO IN CORSO...</span>
+        <span class="meteo-subdetails" id="meteo-subdetails">MIN --° • MAX --° | PIOGGIA --%</span>
+      </div>
+    </div>
+
+    <div class="meteo-forecast" id="meteo-forecast">
+      <!-- Slot previsioni orarie caricate via JS -->
+    </div>
+  </header>
+
+  <!-- MAIN GRID: NOTE & SPESA -->
+  <main class="dashboard-grid">
+    <!-- PANEL 1: NOTE FRIGO -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5z"></path><path d="M15 3v5h5"></path></svg>
+          <span>NOTE IN BACHECA</span>
+        </div>
+        <span class="badge-counter" id="notes-counter">0 NOTE</span>
+      </div>
+
+      <div class="panel-body" id="notes-container">
+        <div class="empty-state">
+          <span class="empty-title">Nessuna nota presente</span>
+          <span class="empty-sub">Invia un messaggio o scrivi 'nota ...' su Telegram per appuntarlo qui.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 2: LISTA SPESA -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span>LISTA DELLA SPESA</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge-counter" id="groceries-counter">0 DA COMPRARE</span>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="grocery-list" id="groceries-container">
+          <div class="empty-state">
+            <span class="empty-title">Spesa vuota</span>
+            <span class="empty-sub">Scrivi 'spesa pane, latte' al bot Telegram per aggiungere articoli.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- BOTTOM BAR: STATO & REFRESH -->
+  <footer class="bottom-bar">
+    <div class="status-left">
+      <span class="pulse-dot"></span>
+      <span id="sync-status">KINDLE DASHBOARD • SYNC TELEGRAM • REFRESH 10s</span>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-action" onclick="clearDoneGroceries()" title="Rimuove articoli completati">Pulisci spesa</button>
+      <button class="btn-action" onclick="fetchData()" title="Forza aggiornamento immediato">Aggiorna</button>
+    </div>
+  </footer>
+
+  <script>
+    let lastDataHash = "";
+
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/data?t=' + Date.now());
+        if (!res.ok) throw new Error("Errore API");
+        const data = await res.json();
+        
+        // Verifica se i dati sono cambiati per azzerare re-render inutili su schermi e-ink
+        const newHash = JSON.stringify({
+          notes: data.notes,
+          groceries: data.groceries,
+          weather: data.weather
+        });
+
+        if (newHash === lastDataHash) {
+          return;
+        }
+        lastDataHash = newHash;
+
+        renderWeather(data.weather);
+        renderNotes(data.notes || []);
+        renderGroceries(data.groceries || []);
+
+        const now = new Date();
+        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('sync-status').textContent = 'KINDLE DASHBOARD • SYNC TELEGRAM • AGGIORNATO ALLE ' + timeStr;
+      } catch (err) {
+        console.error("Errore fetch data:", err);
+      }
+    }
+
+    function renderWeather(w) {
+      if (!w) return;
+      document.getElementById('city-badge').textContent = (w.city || "SALEMI (TP)").toUpperCase();
+      document.getElementById('temp-display').textContent = w.temp || "--°C";
+      document.getElementById('meteo-condition').textContent = (w.condition || "VARIABILE").toUpperCase();
+      document.getElementById('meteo-subdetails').textContent = (w.min_max || "") + ' • ' + (w.rain || "");
+
+      const fcContainer = document.getElementById('meteo-forecast');
+      if (w.forecast && w.forecast.length > 0) {
+        fcContainer.innerHTML = w.forecast.slice(0, 2).map(f => `
+          <div class="forecast-pill">
+            <span class="forecast-time">${f.time}</span>
+            <span class="forecast-temp">${f.temp}</span>
+            <span class="forecast-desc">${f.desc}</span>
+          </div>
+        `).join('');
+      } else {
+        fcContainer.innerHTML = '';
+      }
+    }
+
+    function renderNotes(notes) {
+      const container = document.getElementById('notes-container');
+      const counter = document.getElementById('notes-counter');
+      counter.textContent = notes.length + (notes.length === 1 ? ' NOTA' : ' NOTE');
+
+      if (!notes || notes.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-title">Nessuna nota presente</span>
+            <span class="empty-sub">Invia un messaggio o scrivi 'nota ...' su Telegram per appuntarlo qui.</span>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = notes.map(n => `
+        <div class="note-card">
+          <div class="note-top">
+            <span class="author-badge">${escapeHtml(n.author || "FAMIGLIA")}</span>
+            <span class="note-time">${n.time || ""}</span>
+          </div>
+          <div class="note-text">${escapeHtml(n.text || "")}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderGroceries(groceries) {
+      const container = document.getElementById('groceries-container');
+      const counter = document.getElementById('groceries-counter');
+      
+      const pending = groceries.filter(g => !g.done);
+      counter.textContent = pending.length + ' DA COMPRARE';
+
+      if (!groceries || groceries.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-title">Spesa vuota</span>
+            <span class="empty-sub">Scrivi 'spesa pane, latte' al bot Telegram per aggiungere articoli.</span>
+          </div>
+        `;
+        return;
+      }
+
+      // Ordina: articoli non completati prima
+      const sorted = [...groceries].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
+
+      container.innerHTML = sorted.map(g => `
+        <div class="grocery-item ${g.done ? 'done' : ''}" onclick="toggleGrocery(${g.id})">
+          <div class="grocery-checkbox ${g.done ? 'checked' : ''}"></div>
+          <div class="grocery-content">
+            <span class="grocery-name">${escapeHtml(g.text)}</span>
+            ${g.author ? `<span class="grocery-author">(${escapeHtml(g.author)})</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function toggleGrocery(id) {
+      try {
+        const res = await fetch('/api/toggle-grocery', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ id })
+        });
+        if (res.ok) {
+          fetchData();
+        }
+      } catch (e) {
+        console.error("Errore toggle spesa:", e);
+      }
+    }
+
+    async function clearDoneGroceries() {
+      try {
+        const res = await fetch('/api/clear-groceries', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'}
+        });
+        if (res.ok) {
+          fetchData();
+        }
+      } catch (e) {
+        console.error("Errore clear groceries:", e);
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Polling automatico ogni 10 secondi
+    fetchData();
+    setInterval(fetchData, 10000);
+  </script>
+</body>
+</html>

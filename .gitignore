@@ -1,0 +1,12 @@
+# Configurazioni personali e dati locali
+config.json
+data.json
+*.tmp
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Test temporanei
+test_*.png
+kindle*.png

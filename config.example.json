@@ -1,0 +1,10 @@
+{
+  "port": 8080,
+  "shared_data_path": "../kindle-fridge-dashboard/data.json",
+  "city_name": "Salemi (TP)",
+  "weather_lat": 37.818,
+  "weather_lon": 12.801,
+  "bot_token": "",
+  "default_width": 1072,
+  "default_height": 1448
+}
