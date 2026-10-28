@@ -29,12 +29,21 @@ while true; do
     CYCLES=0
   fi
 
-  # Scarica immagine dal server con timeout di 5 secondi
-  if wget -q -O "$TMP_IMG" --timeout=5 "$SERVER_URL"; then
+  # Scarica immagine dal server (prova curl, wget o fallback binario)
+  SUCCESS=1
+  if [ -x /mnt/us/bin/curl ]; then
+    /mnt/us/bin/curl -k -s -m 8 -o "$TMP_IMG" "$SERVER_URL" && SUCCESS=0
+  elif command -v curl >/dev/null 2>&1; then
+    curl -k -s -m 8 -o "$TMP_IMG" "$SERVER_URL" && SUCCESS=0
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q --no-check-certificate -O "$TMP_IMG" --timeout=8 "$SERVER_URL" 2>/dev/null && SUCCESS=0
+  fi
+
+  if [ "$SUCCESS" -eq 0 ] && [ -s "$TMP_IMG" ]; then
     # Disegna immagine a schermo con eips
     eips -g "$TMP_IMG"
   else
-    echo "[Errore] Impossibile contattare il server: $SERVER_URL"
+    echo "[Errore] Impossibile scaricare immagine da: $SERVER_URL"
   fi
   sleep 10
 done
