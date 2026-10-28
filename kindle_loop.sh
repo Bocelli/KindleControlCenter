@@ -10,10 +10,11 @@
 
 # Inserisci qui l'IP del computer o server su cui gira server.py
 SERVER_URL="${1:-https://kindlecontrolcenter.onrender.com/screen.png}"
+INTERVAL="${2:-600}" # Default: 10 minuti (600 secondi)
 TMP_IMG="/tmp/kindle_screen.png"
 
 echo "Avvio Kindle Dashboard Loop verso: $SERVER_URL"
-echo "Aggiornamento ogni 10 secondi. Premi Ctrl+C per fermare."
+echo "Aggiornamento ogni $INTERVAL secondi (~$((INTERVAL / 60)) min). Premi Ctrl+C per fermare."
 
 # Disabilita screensaver nativo se presente
 if [ -f /usr/bin/lipc-set-prop ]; then
@@ -23,8 +24,8 @@ fi
 CYCLES=0
 while true; do
   CYCLES=$((CYCLES + 1))
-  # Pulizia completa dello schermo ogni 30 cicli (~5 minuti) per azzerare il ghosting E-Ink
-  if [ "$CYCLES" -ge 30 ]; then
+  # Pulizia completa dello schermo ogni 6 cicli (~1 ora) per azzerare il ghosting E-Ink
+  if [ "$CYCLES" -ge 6 ]; then
     eips -c 2>/dev/null
     CYCLES=0
   fi
@@ -62,5 +63,5 @@ while true; do
   else
     echo "[Errore] Impossibile scaricare immagine da: $SERVER_URL"
   fi
-  sleep 10
+  sleep "$INTERVAL"
 done

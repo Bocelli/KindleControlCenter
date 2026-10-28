@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Kindle Control Center - Static Image Kiosk</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="refresh" content="30">
+  <meta http-equiv="refresh" content="600">
   <style>
     * {
       margin: 0;
@@ -40,13 +40,13 @@
   </div>
 
   <script>
-    // Aggiorna l'immagine ogni 20 secondi senza ricaricare la pagina (evita flash del browser)
+    // Aggiorna l'immagine ogni 10 minuti (600.000 ms)
     setInterval(function() {
       var img = document.getElementById('dashboard-img');
       if (img) {
         img.src = '/screen.png?t=' + Date.now();
       }
-    }, 20000);
+    }, 600000);
   </script>
 </body>
 </html>
